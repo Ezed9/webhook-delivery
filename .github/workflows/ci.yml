@@ -39,4 +39,5 @@ jobs:
       - uses: astral-sh/setup-uv@v3
       - run: uv sync --frozen
       - run: uv run ruff check .
-      - run: uv run pytest -q
+      - run: uv run alembic upgrade head
+      - run: uv run pytest -x -q

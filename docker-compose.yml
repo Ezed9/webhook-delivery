@@ -27,6 +27,7 @@ services:
 
   api:
     build: .
+    command: sh -c "python -m alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/webhooks
       REDIS_URL: redis://redis:6379/0
@@ -51,6 +52,16 @@ services:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
       api: { condition: service_healthy }
+
+  receiver:
+    build: .
+    command: uvicorn examples.receiver:app --host 0.0.0.0 --port 9000
+    environment:
+      WEBHOOK_SECRET: ${RECEIVER_SECRET:-placeholder}
+      FLAKY_RATE: "0.3"
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/webhooks
+    ports:
+      - "9000:9000"
 
 volumes:
   pgdata:
