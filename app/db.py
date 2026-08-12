@@ -1,11 +1,24 @@
 from collections.abc import AsyncIterator
-
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import get_settings
 
-engine = create_async_engine(get_settings().database_url)
-async_session_factory = async_sessionmaker(engine, expire_on_commit=False)
+_engine = None
+_session_maker: Optional[async_sessionmaker] = None
+
+
+def _get_session_maker() -> async_sessionmaker:
+    global _engine, _session_maker
+    if _session_maker is None:
+        _engine = create_async_engine(get_settings().database_url)
+        _session_maker = async_sessionmaker(_engine, expire_on_commit=False)
+    return _session_maker
+
+# Keep the same name/behavior tests currently use:
+def async_session_factory() -> AsyncSession:
+    # return an AsyncSession instance (call the maker)
+    return _get_session_maker()()
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
