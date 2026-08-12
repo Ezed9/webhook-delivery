@@ -30,8 +30,8 @@ sequenceDiagram
     participant W as Worker
     participant R as Receiver
     C->>A: POST /events (Idempotency-Key)
-    A->>P: BEGIN: insert event + pending delivery; COMMIT
-    A-->>C: 202 {event_id, replayed: false}
+    A->>P: BEGIN: insert event + pending delivery
+    A-->>C: 202 Accepted (event_id, replayed)
     W->>P: claim (SELECT ... FOR UPDATE SKIP LOCKED)
     W->>R: POST (X-Webhook-Signature, X-Webhook-Timestamp)
     R-->>W: 500
