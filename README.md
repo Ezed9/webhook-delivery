@@ -39,7 +39,7 @@ sequenceDiagram
     Note over W: exponential backoff with full jitter
     W->>R: POST (retry, same signature scheme)
     R-->>W: 200
-    W->>P: status = succeeded; COMMIT
+    W->>P: status = succeeded, COMMIT
 ```
 
 ## Quickstart
