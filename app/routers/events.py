@@ -28,16 +28,17 @@ async def ingest_event(
     tenant: Tenant = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_session),
 ) -> dict | JSONResponse:
+    tenant_id = tenant.id
     endpoint = await session.scalar(
         select(Endpoint).where(
-            Endpoint.id == body.endpoint_id, Endpoint.tenant_id == tenant.id
+            Endpoint.id == body.endpoint_id, Endpoint.tenant_id == tenant_id
         )
     )
     if endpoint is None:
         raise HTTPException(status_code=404, detail="endpoint not found")
 
     event = Event(
-        tenant_id=tenant.id,
+        tenant_id=tenant_id,
         endpoint_id=endpoint.id,
         event_type=body.event_type,
         payload=body.payload,
@@ -50,7 +51,7 @@ async def ingest_event(
         await session.rollback()
         original = await session.scalar(
             select(Event).where(
-                Event.tenant_id == tenant.id,
+                Event.tenant_id == tenant_id,
                 Event.idempotency_key == idempotency_key,
             )
         )
