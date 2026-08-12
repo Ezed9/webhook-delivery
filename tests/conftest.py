@@ -15,7 +15,7 @@ os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 
-from app.db import async_session_factory, engine  # noqa: E402
+from app.db import async_session_factory  # noqa: E402
 from app.main import app  # noqa: E402
 
 TABLES = "delivery_attempts, deliveries, events, endpoints, tenants"
@@ -47,13 +47,20 @@ def _test_database() -> None:
     )
 
 
+@pytest.fixture(scope="session", autouse=True)
+async def _initialize_async_session_factory() -> None:
+    session = async_session_factory()
+    await session.close()
+
+
 @pytest.fixture(autouse=True)
 async def _clean_tables() -> AsyncIterator[None]:
     yield
     from sqlalchemy import text
 
-    async with engine.begin() as conn:
-        await conn.execute(text(f"TRUNCATE {TABLES} RESTART IDENTITY CASCADE"))
+    async with async_session_factory() as session:
+        await session.execute(text(f"TRUNCATE {TABLES} RESTART IDENTITY CASCADE"))
+        await session.commit()
 
 
 @pytest.fixture
