@@ -18,10 +18,17 @@ def do_run_migrations(connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    engine = async_engine_from_config(config.get_section(config.config_ini_section))
-    async with engine.connect() as connection:
+    connectable = async_engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+    )
+    async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
-    await engine.dispose()
+    await connectable.dispose()
 
 
-asyncio.run(run_async_migrations())
+def run_migrations_online() -> None:
+    asyncio.run(run_async_migrations())
+
+
+run_migrations_online()

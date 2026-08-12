@@ -14,8 +14,8 @@ queue — to show exactly where each guarantee comes from.
 ```mermaid
 flowchart LR
     C[Client] -->|"POST /events + Idempotency-Key"| A[FastAPI]
-    A -->|"one transaction"| P[(PostgreSQL<br/>events + deliveries outbox)]
-    W1["Worker ×N"] -->|"FOR UPDATE SKIP LOCKED"| P
+    A -->|"one transaction"| P[(PostgreSQL outbox)]
+    W1["Worker Pool"] -->|"FOR UPDATE SKIP LOCKED"| P
     W1 -->|"HMAC-signed POST"| R[Receiver]
     W1 -.->|"token bucket"| K[(Redis)]
 ```
